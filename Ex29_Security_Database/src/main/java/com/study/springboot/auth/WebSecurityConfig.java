@@ -10,6 +10,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
+import javax.sql.DataSource;
+
 @Configuration // 이 클래스를 빈으로 등록하는데 스프링 설정으로 사용한다는 의미
 @EnableWebSecurity // 스프링 시큐리티의 기능을 활성화하겠다는 의미
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -67,6 +69,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     이번 예제에서는 빠른 테스트를 위해 등록이 간단한 인메모리 방식의 인증 사용자를 등록한다. ( 아래부터 )
     뒤의 예제에서 데이터베이스의 테이블에서 사용자를 SQL 문 쿼리로 구해오는 방식으로 바꿀 것.
      */
+    /*
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth.inMemoryAuthentication()
@@ -78,6 +81,31 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 // 사용자이름 : admin || 비밀번호 : 1234 || 역할(role) : ADMIN 등록
                 .withUser("admin").password(passwordEncoder().encode("1234")).roles("ADMIN");
                 // ROLE_ADMIN 에서 ROLE_는 저동으로 붙는다.
+    }
+    */
+
+    @Autowired
+    private DataSource dataSource;
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        // System.out.println(passwordEncoder().encode("123")); 123을 암호화한 값을 한번 보고 DB에 입력하기 위해 잠시 출력
+
+        auth.jdbcAuthentication()
+                // 데이터베이스 접속 정보를 이용
+                .dataSource(dataSource)
+
+                // 해당 사용자가 있는지를 먼저 조회
+                .usersByUsernameQuery("select name as userName, password, enabled"
+                        + " from user_list where name= ?")
+
+                // 사용자가 있다면 사용자의 역할을 구해옴.
+                .authoritiesByUsernameQuery("select name as userName, authority"
+                        + " from user_list where name = ?")
+
+                // 입력한 비밀번호를 암호화해서 DB의 암호와 비교를 해서 올바른 값인지 검증
+                .passwordEncoder(new BCryptPasswordEncoder());
+
     }
 
     // 비밀번호의 인코딩 방식을 정함, 디폴트를 사용하므로 임의로 코드를 변경할 필요가 없음.
