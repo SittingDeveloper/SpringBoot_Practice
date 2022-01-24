@@ -39,7 +39,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.formLogin()
                 .loginPage("/loginForm") // default = /login
                 .loginProcessingUrl("/j_spring_security_check") // 스프링의 시큐리티 인증 url
-                .failureUrl("/loginError") // 로그인이 실패할 때 호출될 url
+                .failureUrl("/loginForm?error") // 로그인이 실패할 때 호출될 url
                 .usernameParameter("j_username") // 로그인폼 JSP 에서 지정한 변수명으로 파라미터명 지정
                 .passwordParameter("j_password") // 로그인폼 JSP 에서 지정한 변수명으로 파라미터명 지정
                 .permitAll();
