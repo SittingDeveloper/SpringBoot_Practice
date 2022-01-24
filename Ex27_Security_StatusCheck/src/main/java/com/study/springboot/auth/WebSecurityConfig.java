@@ -8,10 +8,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
 @Configuration // 이 클래스를 빈으로 등록하는데 스프링 설정으로 사용한다는 의미
 @EnableWebSecurity // 스프링 시큐리티의 기능을 활성화하겠다는 의미
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Autowired
+    public AuthenticationFailureHandler authenticationFailureHandler;
 
     // 시큐리티를 사용하기 위해 configure 메서드를 오버라이딩해서 시큐리티 설정 내용을 구성
     @Override
@@ -39,7 +43,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.formLogin()
                 .loginPage("/loginForm") // default = /login
                 .loginProcessingUrl("/j_spring_security_check") // 스프링의 시큐리티 인증 url
-                .failureUrl("/loginForm?error") // 로그인이 실패할 때 호출될 url
+                //.failureUrl("/loginForm?error") // 로그인이 실패할 때 호출될 url
+                .failureHandler(authenticationFailureHandler)
                 .usernameParameter("j_username") // 로그인폼 JSP 에서 지정한 변수명으로 파라미터명 지정
                 .passwordParameter("j_password") // 로그인폼 JSP 에서 지정한 변수명으로 파라미터명 지정
                 .permitAll();
